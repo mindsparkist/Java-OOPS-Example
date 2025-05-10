@@ -549,3 +549,431 @@ for (int num : new Countdown(5)) {
 
 Now you can traverse collections like a pro! 🚀
 
+# **Understanding Comparable and Comparator in Java**
+
+## **1. Comparable Interface (Natural Ordering)**
+
+### **What is Comparable?**
+- Used to define the **natural/default ordering** of objects
+- Implemented by the class itself
+- Modifies the original class
+
+### **Key Points:**
+✔ Single method: `compareTo(T o)`  
+✔ Returns: negative (less than), zero (equal), positive (greater than)  
+✔ Used by `Collections.sort()` and sorted collections like `TreeSet`
+
+### **Example: Sorting Persons by Age**
+```java
+class Person implements Comparable<Person> {
+    String name;
+    int age;
+    
+    @Override
+    public int compareTo(Person other) {
+        return this.age - other.age; // Sort by age
+    }
+}
+
+// Usage:
+List<Person> people = new ArrayList<>();
+Collections.sort(people); // Uses compareTo
+```
+
+### **When to Use Comparable?**
+- When there's one obvious natural ordering
+- When you control the class source code
+- For default sorting behavior
+
+---
+
+## **2. Comparator Interface (Custom Ordering)**
+
+### **What is Comparator?**
+- Used to define **multiple custom sorting** strategies
+- Implemented as separate classes
+- Doesn't modify original class
+
+### **Key Points:**
+✔ Single method: `compare(T o1, T o2)`  
+✔ Can create multiple comparators for different sortings  
+✔ More flexible than Comparable
+
+### **Example: Different Sorting Strategies**
+```java
+// Name comparator
+class NameComparator implements Comparator<Person> {
+    @Override
+    public int compare(Person p1, Person p2) {
+        return p1.name.compareTo(p2.name);
+    }
+}
+
+// Age comparator
+class AgeComparator implements Comparator<Person> {
+    @Override
+    public int compare(Person p1, Person p2) {
+        return p1.age - p2.age;
+    }
+}
+
+// Usage:
+Collections.sort(people, new NameComparator()); // Sort by name
+Collections.sort(people, new AgeComparator()); // Sort by age
+```
+
+### **Java 8+ Lambda Syntax**
+```java
+// Sort by name (shorter syntax)
+Collections.sort(people, (p1, p2) -> p1.name.compareTo(p2.name));
+
+// Sort by age descending
+Collections.sort(people, (p1, p2) -> p2.age - p1.age);
+```
+
+---
+
+## **Key Differences**
+
+| Feature        | Comparable | Comparator |
+|---------------|------------|------------|
+| **Package**   | java.lang  | java.util  |
+| **Method**    | compareTo() | compare() |
+| **Sorting Logic** | Inside the class | Separate class |
+| **Number of Orderings** | One (natural) | Many (custom) |
+| **Class Modification** | Required | Not required |
+| **Lambda Friendly** | No | Yes |
+
+---
+
+## **When to Use Which?**
+
+### **Use Comparable when:**
+- There's a single obvious natural ordering
+- You have control over the class source code
+- Default sorting behavior is needed
+
+### **Use Comparator when:**
+- You need multiple sorting strategies
+- You can't modify the original class
+- You need temporary or custom sorting
+- You want to sort using Java 8 lambdas
+
+---
+
+## **Best Practices**
+
+1. **For Comparable:**
+   - Keep consistent with `equals()`
+   - Handle null values carefully
+   - Use `Integer.compare(a,b)` instead of `a-b` to avoid overflow
+
+2. **For Comparator:**
+   - Make comparators `Serializable` if needed
+   - Consider using `Comparator.comparing()` for cleaner code
+   - Chain comparators with `thenComparing()`
+
+```java
+// Advanced Comparator example
+Comparator<Person> comparator = Comparator
+    .comparing(Person::getLastName)
+    .thenComparing(Person::getFirstName)
+    .thenComparingInt(Person::getAge);
+```
+
+---
+
+## **Summary**
+
+- **Comparable** → For natural/default ordering (modifies class)
+- **Comparator** → For custom/multiple orderings (external to class)
+- Both essential for sorting objects in Java
+- Modern Java prefers Comparator for its flexibility
+
+Now you can sort objects any way you need! 🚀
+
+# **The Map Interface in Java - Explained for Beginners**
+
+## **What is a Map?**
+
+A **Map** is a Java collection that stores data as **key-value pairs** (like a dictionary). Each key must be unique, and each key maps to exactly one value.
+
+### **Key Characteristics:**
+- **Unique keys** (no duplicates)
+- **Each key maps to one value**
+- **Not a subtype of Collection interface** (different hierarchy)
+- **Common implementations**: `HashMap`, `TreeMap`, `LinkedHashMap`
+
+## **Why Use Maps?**
+- Fast lookup by key (O(1) for HashMap)
+- Store associative data (e.g., userID → User object)
+- Eliminate duplicate keys automatically
+- Flexible value storage (can store objects, collections, etc.)
+
+## **Core Map Methods**
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `V put(K key, V value)` | Adds key-value pair | `map.put("Alice", 25)` |
+| `V get(Object key)` | Returns value for key | `map.get("Alice")` → 25 |
+| `boolean containsKey(Object key)` | Checks if key exists | `map.containsKey("Bob")` |
+| `V remove(Object key)` | Removes key-value pair | `map.remove("Alice")` |
+| `Set<K> keySet()` | Returns all keys | `map.keySet()` |
+| `Collection<V> values()` | Returns all values | `map.values()` |
+| `Set<Map.Entry<K,V>> entrySet()` | Returns key-value pairs | `map.entrySet()` |
+| `int size()` | Returns number of pairs | `map.size()` |
+
+## **Common Map Implementations**
+
+1. **HashMap**
+   - Most common implementation
+   - No ordering guarantees
+   - O(1) time for basic operations
+   ```java
+   Map<String, Integer> ages = new HashMap<>();
+   ```
+
+2. **TreeMap**
+   - Sorted by keys (natural ordering or Comparator)
+   - O(log n) time for operations
+   ```java
+   Map<String, Integer> sortedAges = new TreeMap<>();
+   ```
+
+3. **LinkedHashMap**
+   - Maintains insertion order
+   - Slower than HashMap but predictable iteration
+   ```java
+   Map<String, Integer> orderedAges = new LinkedHashMap<>();
+   ```
+
+## **Basic Map Example**
+
+```java
+Map<String, Integer> studentGrades = new HashMap<>();
+
+// Adding entries
+studentGrades.put("Alice", 90);
+studentGrades.put("Bob", 85);
+studentGrades.put("Charlie", 95);
+
+// Accessing values
+int aliceGrade = studentGrades.get("Alice"); // 90
+
+// Checking existence
+boolean hasBob = studentGrades.containsKey("Bob"); // true
+
+// Iterating (3 ways)
+// 1. Key iteration
+for (String name : studentGrades.keySet()) {
+    System.out.println(name);
+}
+
+// 2. Value iteration
+for (Integer grade : studentGrades.values()) {
+    System.out.println(grade);
+}
+
+// 3. Entry iteration (most common)
+for (Map.Entry<String, Integer> entry : studentGrades.entrySet()) {
+    System.out.println(entry.getKey() + ": " + entry.getValue());
+}
+```
+
+## **Important Map Behaviors**
+
+1. **Duplicate Keys**
+   ```java
+   map.put("Alice", 25);
+   map.put("Alice", 30); // Overwrites previous value
+   ```
+
+2. **Null Handling**
+   - HashMap/LinkedHashMap: Allows one null key and multiple null values
+   - TreeMap: Doesn't allow null keys (throws NullPointerException)
+
+3. **Immutable Maps (Java 9+)**
+   ```java
+   Map<String, Integer> immutable = Map.of(
+       "Alice", 25,
+       "Bob", 30
+   );
+   ```
+
+## **When to Use Which Map?**
+
+| Situation | Recommended Map |
+|-----------|-----------------|
+| Need fastest access, don't care about order | HashMap |
+| Need sorted keys | TreeMap |
+| Need insertion-order iteration | LinkedHashMap |
+| Need thread-safety | ConcurrentHashMap |
+| Read-only map | Map.of() (Java 9+) |
+
+## **Common Use Cases**
+
+1. **Database-like lookups**
+   ```java
+   Map<Integer, User> userDatabase = new HashMap<>();
+   ```
+
+2. **Counting occurrences**
+   ```java
+   Map<String, Integer> wordCounts = new HashMap<>();
+   for (String word : words) {
+       wordCounts.merge(word, 1, Integer::sum);
+   }
+   ```
+
+3. **Caching**
+   ```java
+   Map<String, ExpensiveObject> cache = new HashMap<>();
+   ```
+
+## **Best Practices**
+
+1. Always specify generic types (`Map<K,V>`)
+2. Use `entrySet()` for iteration (most efficient)
+3. Consider `compute()`/`merge()` for complex updates
+4. For thread safety, use `ConcurrentHashMap` or `Collections.synchronizedMap()`
+5. Override `equals()` and `hashCode()` properly for custom key objects
+
+## **Java 8+ Enhancements**
+
+```java
+// Default value if key absent
+int grade = studentGrades.getOrDefault("Dave", -1);
+
+// Compute if absent
+studentGrades.computeIfAbsent("Alice", k -> calculateGrade(k));
+
+// Merge values
+studentGrades.merge("Alice", 10, Integer::sum);
+```
+
+Now you're ready to use Maps effectively in your Java programs! They're one of the most useful data structures for real-world programming tasks.
+
+# **Functional Interfaces in Java - Explained Simply**
+
+## **What is a Functional Interface?**
+
+A functional interface is **an interface with exactly one abstract method** (but can have multiple default/static methods). They enable **lambda expressions** and **method references** in Java.
+
+### **Key Characteristics:**
+- Must have **only one abstract method** (SAM - Single Abstract Method)
+- Can have **any number of default/static methods**
+- Often annotated with `@FunctionalInterface` (optional but recommended)
+- Used extensively with Java 8's **lambda expressions**
+
+## **Why Use Functional Interfaces?**
+- Enable **functional programming** in Java
+- Make code more **concise** with lambdas
+- Support **behavior parameterization** (passing functions as arguments)
+- Foundation for Java's **Stream API**
+
+## **Built-in Functional Interfaces (java.util.function)**
+
+| Interface          | Method         | Description | Common Use |
+|--------------------|----------------|-------------|------------|
+| `Supplier<T>`      | `T get()`      | Provides values | Lazy initialization |
+| `Consumer<T>`      | `void accept(T)` | Consumes values | ForEach operations |
+| `Predicate<T>`     | `boolean test(T)` | Condition check | Filtering |
+| `Function<T,R>`    | `R apply(T)`   | Transforms input | Mapping |
+| `UnaryOperator<T>` | `T apply(T)`   | Same-type transform | Math operations |
+| `BiFunction<T,U,R>`| `R apply(T,U)` | Two-arg function | Combining values |
+
+## **Example: Creating a Functional Interface**
+
+```java
+@FunctionalInterface
+interface StringProcessor {
+    String process(String input);  // Single abstract method
+    
+    default void log(String msg) {  // Default method allowed
+        System.out.println("Log: " + msg);
+    }
+}
+```
+
+## **Using Functional Interfaces with Lambdas**
+
+```java
+// Traditional way (anonymous class)
+StringProcessor oldWay = new StringProcessor() {
+    @Override
+    public String process(String input) {
+        return input.toUpperCase();
+    }
+};
+
+// Lambda way (much cleaner!)
+StringProcessor lambdaWay = input -> input.toUpperCase();
+
+System.out.println(lambdaWay.process("hello"));  // Prints "HELLO"
+```
+
+## **Common Built-in Functional Interfaces in Action**
+
+### **1. Predicate (Tests a condition)**
+```java
+Predicate<String> isLong = s -> s.length() > 5;
+System.out.println(isLong.test("Hello"));  // false
+System.out.println(isLong.test("Hello World"));  // true
+```
+
+### **2. Function (Transforms input)**
+```java
+Function<String, Integer> lengthMapper = s -> s.length();
+System.out.println(lengthMapper.apply("Java"));  // 4
+```
+
+### **3. Consumer (Performs action)**
+```java
+Consumer<String> printer = s -> System.out.println(">> " + s);
+printer.accept("Functional!");  // Prints ">> Functional!"
+```
+
+### **4. Supplier (Provides values)**
+```java
+Supplier<Double> randomSupplier = () -> Math.random();
+System.out.println(randomSupplier.get());  // Random number
+```
+
+## **Method References (Shortcut for Lambdas)**
+```java
+// Equivalent to: s -> System.out.println(s)
+Consumer<String> printer = System.out::println;
+
+// Equivalent to: s -> s.length()
+Function<String, Integer> lengthGetter = String::length;
+```
+
+## **When to Create Custom Functional Interfaces?**
+1. When none of the built-in interfaces fit your needs
+2. When you need more descriptive method names
+3. When working with specific domain operations
+
+## **Best Practices**
+✔ Always use `@FunctionalInterface` annotation  
+✔ Prefer built-in interfaces when possible  
+✔ Keep parameter/return types generic for reusability  
+✔ Use method references where applicable for readability  
+
+## **Real-World Example with Stream API**
+```java
+List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
+
+// Using Predicate and Consumer
+names.stream()
+     .filter(name -> name.startsWith("A"))  // Predicate
+     .forEach(System.out::println);         // Consumer
+
+// Using Function
+List<Integer> lengths = names.stream()
+                           .map(String::length)  // Function
+                           .collect(Collectors.toList());
+```
+
+Functional interfaces are the backbone of modern Java programming, enabling clean, functional-style code! 🚀
+
+

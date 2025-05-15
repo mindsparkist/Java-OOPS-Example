@@ -425,4 +425,590 @@ int aliceAge = ages.get("Alice"); // 30
 
 Understanding these interfaces helps you choose the right collection for every situation! 🚀
 
+# **Functional Programming in Java - Complete Guide**
+
+## **1. Functional Interfaces**
+Interfaces with **exactly one abstract method** (SAM)
+
+### **Key Points:**
+- Can have multiple default/static methods
+- Annotated with `@FunctionalInterface` (optional)
+- Enable lambda expressions
+
+**Example:**
+```java
+@FunctionalInterface
+interface Greeter {
+    void greet(String name); // Single abstract method
+    
+    default void log() {     // Default method allowed
+        System.out.println("Logged");
+    }
+}
+```
+
+## **2. Anonymous Inner Classes**
+Traditional way to implement functional interfaces (pre-Java 8)
+
+**Example:**
+```java
+Greeter oldWay = new Greeter() {
+    @Override
+    public void greet(String name) {
+        System.out.println("Hello " + name);
+    }
+};
+```
+
+## **3. Lambda Expressions**
+Concise syntax for implementing functional interfaces
+
+**Syntax:**
+```java
+(parameters) -> { body }
+```
+
+**Examples:**
+```java
+// No parameters
+Runnable r = () -> System.out.println("Running");
+
+// Single parameter
+Greeter g = name -> System.out.println("Hello " + name);
+
+// Multiple parameters
+Comparator<Integer> comp = (a, b) -> a - b;
+```
+
+## **4. Variable Capture**
+Lambdas can access:
+
+- **Final or effectively final** local variables
+- Instance variables (implicitly via `this`)
+
+**Example:**
+```java
+String prefix = "Mr. "; // Effectively final
+Greeter g = name -> System.out.println(prefix + name);
+```
+
+## **5. Method References**
+Shortcut for lambdas calling existing methods
+
+**Types:**
+```java
+// Static method
+Function<String, Integer> parser = Integer::parseInt;
+
+// Instance method
+Consumer<String> printer = System.out::println;
+
+// Constructor
+Supplier<List<String>> listSupplier = ArrayList::new;
+```
+
+## **6. Built-in Functional Interfaces (java.util.function)**
+
+### **A. Consumer<T>**
+Accepts input, returns nothing (`void accept(T t)`)
+
+**Example:**
+```java
+Consumer<String> printUpper = s -> System.out.println(s.toUpperCase());
+printUpper.accept("hello"); // Prints "HELLO"
+```
+
+### **Chaining Consumers**
+```java
+Consumer<String> c1 = s -> System.out.print("1:" + s);
+Consumer<String> c2 = s -> System.out.print(", 2:" + s);
+
+c1.andThen(c2).accept("Hi"); // Prints "1:Hi, 2:Hi"
+```
+
+### **B. Supplier<T>**
+Provides values (`T get()`)
+
+**Example:**
+```java
+Supplier<Double> randomSupplier = Math::random;
+System.out.println(randomSupplier.get());
+```
+
+### **C. Function<T,R>**
+Transforms input (`R apply(T t)`)
+
+**Example:**
+```java
+Function<String, Integer> lengthGetter = String::length;
+System.out.println(lengthGetter.apply("Java")); // 4
+```
+
+### **Composing Functions**
+```java
+Function<Integer, Integer> doubler = x -> x * 2;
+Function<Integer, Integer> squarer = x -> x * x;
+
+doubler.andThen(squarer).apply(3); // 36 (3→6→36)
+squarer.compose(doubler).apply(3); // 36 (same)
+```
+
+### **D. Predicate<T>**
+Tests condition (`boolean test(T t)`)
+
+**Example:**
+```java
+Predicate<String> isLong = s -> s.length() > 5;
+System.out.println(isLong.test("Hello")); // false
+```
+
+### **Combining Predicates**
+```java
+Predicate<Integer> isEven = x -> x % 2 == 0;
+Predicate<Integer> isPositive = x -> x > 0;
+
+// AND
+Predicate<Integer> evenAndPositive = isEven.and(isPositive);
+
+// OR
+Predicate<Integer> evenOrPositive = isEven.or(isPositive);
+
+// NEGATE
+Predicate<Integer> isOdd = isEven.negate();
+```
+
+## **Key Comparisons**
+
+| Concept | Use Case | Example |
+|---------|----------|---------|
+| Lambda | Inline implementation | `(a,b) -> a + b` |
+| Method Ref | Existing method reuse | `String::length` |
+| Consumer | Accept input, no return | `System.out::println` |
+| Supplier | Provide values | `Instant::now` |
+| Function | Transform input | `Integer::parseInt` |
+| Predicate | Test condition | `s -> s.isEmpty()` |
+
+## **Best Practices**
+1. Prefer lambdas over anonymous classes
+2. Use method references when possible
+3. Chain functional operations for readability
+4. Choose the most specific functional interface
+
+These concepts form the foundation of functional programming in Java! 🚀
+
+
+# **Method References Explained for Java Beginners**
+
+Method references are a **shorthand notation** for writing lambda expressions when you're just calling an existing method. They make your code cleaner and more readable.
+
+## **The 4 Types of Method References**
+
+### **1. Reference to a Static Method**
+**Syntax:** `ClassName::staticMethodName`
+
+```java
+// Lambda
+Function<String, Integer> parser1 = s -> Integer.parseInt(s);
+
+// Method reference (equivalent)
+Function<String, Integer> parser2 = Integer::parseInt;
+```
+
+**Real Example:**
+```java
+List<String> numbers = List.of("1", "2", "3");
+numbers.stream()
+       .map(Integer::parseInt)  // Convert strings to integers
+       .forEach(System.out::println);
+```
+
+### **2. Reference to an Instance Method of a Particular Object**
+**Syntax:** `object::instanceMethodName`
+
+```java
+String greeting = "Hello";
+
+// Lambda
+Consumer<String> greeter1 = s -> greeting.concat(s);
+
+// Method reference (equivalent)
+Consumer<String> greeter2 = greeting::concat;
+```
+
+**Real Example:**
+```java
+Printer printer = new Printer();
+List<String> messages = List.of("Hi", "Bye");
+messages.forEach(printer::print);  // Calls printer.print(message)
+```
+
+### **3. Reference to an Instance Method of an Arbitrary Object**
+**Syntax:** `ClassName::instanceMethodName`
+
+```java
+// Lambda
+Function<String, Integer> lengthGetter1 = s -> s.length();
+
+// Method reference (equivalent)
+Function<String, Integer> lengthGetter2 = String::length;
+```
+
+**Real Example:**
+```java
+List<String> words = List.of("apple", "banana", "cherry");
+words.stream()
+     .map(String::length)  // Gets length of each string
+     .forEach(System.out::println);
+```
+
+### **4. Reference to a Constructor**
+**Syntax:** `ClassName::new`
+
+```java
+// Lambda
+Supplier<List<String>> listMaker1 = () -> new ArrayList<>();
+
+// Method reference (equivalent)
+Supplier<List<String>> listMaker2 = ArrayList::new;
+```
+
+**Real Example:**
+```java
+Function<Integer, List<String>> listCreator = ArrayList::new;
+List<String> myList = listCreator.apply(10);  // Creates new ArrayList
+```
+
+## **When to Use Method References**
+
+1. **When the lambda just calls an existing method**
+   ```java
+   // Instead of:
+   names.forEach(name -> System.out.println(name));
+   
+   // Use:
+   names.forEach(System.out::println);
+   ```
+
+2. **When you want more readable code**
+   ```java
+   // Clearer intent with method reference
+   numbers.stream().sorted(Integer::compare);
+   ```
+
+3. **When working with constructors**
+   ```java
+   // More concise object creation
+   Supplier<LocalDate> today = LocalDate::now;
+   ```
+
+## **Common Mistakes to Avoid**
+
+❌ **Using when additional logic is needed**
+```java
+// WRONG - Can't add extra logic
+names.forEach(System.out::println.toUpperCase());
+
+// CORRECT - Must use lambda
+names.forEach(name -> System.out.println(name.toUpperCase()));
+```
+
+❌ **Confusing method reference types**
+```java
+// Static vs instance method confusion
+String s = "test";
+Function<String, Integer> wrong = s::length;  // Won't compile!
+Function<String, Integer> right = String::length;  // Correct
+```
+
+## **Why Method References Matter**
+
+1. **Readability** - Clearly shows which method is being called
+2. **Conciseness** - Shorter than equivalent lambdas
+3. **Maintainability** - Direct reference to existing methods
+
+**Remember:** Method references are just "syntactic sugar" - the compiler converts them to equivalent lambda expressions!
+
+## **Cheat Sheet**
+
+| Scenario | Lambda Example | Method Reference |
+|----------|---------------|------------------|
+| Static method | `s -> Integer.parseInt(s)` | `Integer::parseInt` |
+| Instance method (specific object) | `s -> printer.print(s)` | `printer::print` |
+| Instance method (any object) | `s -> s.length()` | `String::length` |
+| Constructor | `() -> new ArrayList<>()` | `ArrayList::new` |
+
+Method references help you write Java code that's cleaner and more professional-looking!
+
+Alright, let's dive into the world of Java and explore the concepts of imperative vs. functional interfaces, and then journey through the fascinating landscape of Streams\!
+
+### Imperative vs. Functional Interfaces
+
+Think of it this way:
+
+  * **Imperative Programming:** This is like giving someone a detailed step-by-step instruction manual on how to achieve a task. You explicitly tell the computer *how* to do something. In Java, this often involves using loops (`for`, `while`), conditional statements (`if`, `else`), and mutable variables to change the state of your program.
+
+  * **Functional Programming:** This is more like telling someone *what* you want to achieve, and letting them figure out the *how*. In Java (especially with the introduction of Lambdas and Streams in Java 8), functional interfaces play a crucial role in enabling this style.
+
+**Functional Interfaces:**
+
+A **functional interface** in Java is an interface that contains **exactly one abstract method**. They can have default methods and static methods, but only one abstract method. The `@FunctionalInterface` annotation is optional but highly recommended as it instructs the compiler to enforce this rule.
+
+**Why are they important for functional programming?**
+
+Functional interfaces provide the target type for lambda expressions and method references. Lambda expressions are concise ways to represent an anonymous function (a method without a name). These expressions can then be treated as instances of functional interfaces.
+
+**Example:**
+
+Consider the `Runnable` interface:
+
+```java
+@FunctionalInterface
+public interface Runnable {
+    public abstract void run();
+}
+```
+
+It has only one abstract method, `run()`. You can create an instance of `Runnable` using an anonymous inner class (imperative style) or a lambda expression (functional style):
+
+**Imperative (Anonymous Inner Class):**
+
+```java
+Runnable runnableImperative = new Runnable() {
+    @Override
+    public void run() {
+        System.out.println("Running imperatively!");
+    }
+};
+runnableImperative.run();
+```
+
+**Functional (Lambda Expression):**
+
+```java
+Runnable runnableFunctional = () -> System.out.println("Running functionally!");
+runnableFunctional.run();
+```
+
+Other common functional interfaces in Java include `Consumer`, `Supplier`, `Function`, `Predicate`, etc., each representing a different type of function signature.
+
+### Working with Streams
+
+Java Streams, introduced in Java 8, provide a powerful way to process collections of data in a declarative and functional style. A stream represents a sequence of elements that supports various aggregate operations.
+
+**1. Creating a Stream:**
+
+You can create streams from various sources:
+
+  * **From a Collection:**
+
+    ```java
+    List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
+    Stream<String> nameStream = names.stream(); // Sequential stream
+    Stream<String> parallelNameStream = names.parallelStream(); // Parallel stream
+    ```
+
+  * **From an Array:**
+
+    ```java
+    int[] numbers = {1, 2, 3, 4, 5};
+    IntStream numberStream = Arrays.stream(numbers);
+    ```
+
+  * **Using `Stream.of()`:**
+
+    ```java
+    Stream<Integer> integerStream = Stream.of(10, 20, 30);
+    ```
+
+  * **Using `Stream.iterate()` (for infinite streams):**
+
+    ```java
+    Stream<Integer> evenNumbers = Stream.iterate(0, n -> n + 2); // 0, 2, 4, 6...
+    ```
+
+  * **Using `Stream.generate()` (for infinite streams with a supplier):**
+
+    ```java
+    Stream<Double> randomNumbers = Stream.generate(Math::random);
+    ```
+
+**2. Mapping Elements (`map()`):**
+
+The `map()` operation transforms each element in the stream to a new element using a provided function. It takes a `Function` functional interface as an argument.
+
+```java
+List<String> words = Arrays.asList("apple", "banana", "cherry");
+Stream<Integer> wordLengths = words.stream()
+                                   .map(String::length); // Method reference to String.length()
+wordLengths.forEach(System.out::println); // Output: 5, 6, 6
+```
+
+**3. Slicing Streams:**
+
+  * **`limit(long maxSize)`:** Returns a new stream containing at most `maxSize` elements.
+
+    ```java
+    Stream<Integer> firstThree = Stream.of(1, 2, 3, 4, 5).limit(3);
+    firstThree.forEach(System.out::println); // Output: 1, 2, 3
+    ```
+
+  * **`skip(long n)`:** Returns a new stream after discarding the first `n` elements.
+
+    ```java
+    Stream<Integer> afterTwo = Stream.of(1, 2, 3, 4, 5).skip(2);
+    afterTwo.forEach(System.out::println); // Output: 3, 4, 5
+    ```
+
+**4. Sorting Streams (`sorted()`):**
+
+The `sorted()` operation returns a new stream with the elements sorted.
+
+  * **Natural Order:**
+
+    ```java
+    Stream<String> sortedNames = Stream.of("Charlie", "Alice", "Bob").sorted();
+    sortedNames.forEach(System.out::println); // Output: Alice, Bob, Charlie
+    ```
+
+  * **With a `Comparator`:**
+
+    ```java
+    Stream<String> sortedByLength = Stream.of("apple", "banana", "kiwi")
+                                        .sorted(Comparator.comparingInt(String::length));
+    sortedByLength.forEach(System.out::println); // Output: kiwi, apple, banana
+    ```
+
+**5. Getting Unique Elements (`distinct()`):**
+
+The `distinct()` operation returns a new stream containing only the unique elements (based on `equals()` method).
+
+```java
+Stream<Integer> numbersWithDuplicates = Stream.of(1, 2, 2, 3, 1, 4);
+Stream<Integer> uniqueNumbers = numbersWithDuplicates.distinct();
+uniqueNumbers.forEach(System.out::println); // Output: 1, 2, 3, 4
+```
+
+**6. Peeking Elements (`peek(Consumer<? super T> action)`):**
+
+The `peek()` operation allows you to perform an action on each element as it passes through the stream without modifying the stream itself. It's useful for debugging or logging.
+
+```java
+Stream<String> processedWords = Stream.of("hello", "world")
+                                     .peek(s -> System.out.println("Processing: " + s))
+                                     .map(String::toUpperCase)
+                                     .peek(s -> System.out.println("After map: " + s));
+processedWords.forEach(System.out::println);
+// Output:
+// Processing: hello
+// After map: HELLO
+// HELLO
+// Processing: world
+// After map: WORLD
+// WORLD
+```
+
+**7. Simple Reduce (`reduce()`):**
+
+The `reduce()` operation combines the elements of a stream into a single result. It has several forms:
+
+  * **`reduce(T identity, BinaryOperator<T> accumulator)`:** Starts with an `identity` value and applies the `accumulator` function to each element.
+
+    ```java
+    List<Integer> numbersToSum = Arrays.asList(1, 2, 3, 4, 5);
+    int sum = numbersToSum.stream().reduce(0, (a, b) -> a + b); // Lambda for addition
+    System.out.println("Sum: " + sum); // Output: Sum: 15
+    ```
+
+  * **`reduce(BinaryOperator<T> accumulator)`:** Similar to the above, but doesn't have an initial `identity`. Returns an `Optional<T>` as the stream might be empty.
+
+    ```java
+    List<Integer> numbersToMultiply = Arrays.asList(1, 2, 3, 4, 5);
+    Optional<Integer> product = numbersToMultiply.stream().reduce((a, b) -> a * b);
+    product.ifPresent(p -> System.out.println("Product: " + p)); // Output: Product: 120
+    ```
+
+**8. Collectors (`collect(Collector<? super T, A, R> collector)`):**
+
+Collectors are used to accumulate elements in a stream into a final result such as a `List`, `Set`, or `Map`. The `Collectors` class provides many useful static factory methods for common collection operations.
+
+  * **`toList()`:** Collects elements into a `List`.
+
+    ```java
+    List<String> upperCaseNames = names.stream()
+                                       .map(String::toUpperCase)
+                                       .collect(Collectors.toList());
+    System.out.println(upperCaseNames); // Output: [ALICE, BOB, CHARLIE]
+    ```
+
+  * **`toSet()`:** Collects elements into a `Set` (removes duplicates).
+
+    ```java
+    Set<String> uniqueNames = Stream.of("Alice", "Bob", "Alice")
+                                    .collect(Collectors.toSet());
+    System.out.println(uniqueNames); // Output: [Alice, Bob] (order may vary)
+    ```
+
+  * **`joining(CharSequence delimiter)`:** Concatenates elements into a `String` with an optional delimiter.
+
+    ```java
+    String allNames = names.stream().collect(Collectors.joining(", "));
+    System.out.println(allNames); // Output: Alice, Bob, Charlie
+    ```
+
+**9. Grouping Elements (`groupingBy()`):**
+
+The `groupingBy()` collector groups elements based on a classification function.
+
+```java
+List<Person> people = Arrays.asList(
+    new Person("Alice", 25),
+    new Person("Bob", 30),
+    new Person("Charlie", 25)
+);
+
+Map<Integer, List<Person>> peopleByAge = people.stream()
+                                               .collect(Collectors.groupingBy(Person::getAge));
+System.out.println(peopleByAge);
+// Output: {25=[Person{name='Alice', age=25}, Person{name='Charlie', age=25}], 30=[Person{name='Bob', age=30}]}
+```
+
+**10. Partitioning Elements (`partitioningBy()`):**
+
+The `partitioningBy()` collector divides the elements into two groups based on a predicate (a function that returns a boolean).
+
+```java
+Map<Boolean, List<Person>> adultsAndMinors = people.stream()
+                                                  .collect(Collectors.partitioningBy(p -> p.getAge() >= 18));
+System.out.println(adultsAndMinors);
+// Output: {false=[], true=[Person{name='Alice', age=25}, Person{name='Bob', age=30}, Person{name='Charlie', age=25}]}
+```
+
+**11. Primitive Type Streams:**
+
+Java provides specialized stream interfaces for primitive types like `int`, `long`, and `double` to avoid the overhead of autoboxing and unboxing: `IntStream`, `LongStream`, and `DoubleStream`.
+
+  * **Creating Primitive Streams:**
+
+    ```java
+    IntStream intStream = IntStream.range(1, 5); // 1, 2, 3, 4 (exclusive end)
+    LongStream longStream = LongStream.of(10L, 20L, 30L);
+    DoubleStream doubleStream = DoubleStream.of(3.14, 2.71);
+    ```
+
+  * **Mapping to Primitive Streams:**
+
+    ```java
+    List<String> numbersAsStrings = Arrays.asList("1", "2", "3");
+    IntStream parsedIntStream = numbersAsStrings.stream().mapToInt(Integer::parseInt);
+    ```
+
+  * **Specialized Reduce Operations:** Primitive streams offer specialized `sum()`, `average()`, `min()`, and `max()` methods that return the primitive type directly or an `Optional` for potential empty streams.
+
+    ```java
+    int sumOfInts = IntStream.rangeClosed(1, 5).sum(); // Output: 15
+    OptionalDouble averageOfDoubles = DoubleStream.of(1.0, 2.0, 3.0).average();
+    averageOfDoubles.ifPresent(avg -> System.out.println("Average: " + avg)); // Output: Average: 2.0
+    ```
+
+These concepts form the foundation of working with Streams in Java, enabling you to write more concise, readable, and often more efficient code for data processing. Let me know if you'd like to explore any of these areas in more detail or have specific use cases in mind\!
 

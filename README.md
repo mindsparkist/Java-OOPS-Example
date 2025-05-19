@@ -1090,3 +1090,160 @@ public static void addIntegers(List<? super Integer> list) {
    ```
 
 Wildcards help balance type safety with flexibility in Java generics, especially when designing APIs that need to work with multiple generic types!
+
+
+# **Synchronized Keyword and Monitor Objects in Java**
+
+## **1. What is the `synchronized` Keyword?**
+
+The `synchronized` keyword in Java is used to **control access to shared resources** in a multi-threaded environment. It ensures that only **one thread at a time** can execute a synchronized block/method, preventing race conditions.
+
+### **Why Use `synchronized`?**
+✔ Prevents **race conditions** (multiple threads modifying data at once)  
+✔ Ensures **thread-safe** access to shared data  
+✔ Guarantees **visibility** of changes across threads  
+
+---
+
+## **2. How to Use `synchronized`?**
+### **Option 1: Synchronized Method**
+```java
+public synchronized void withdraw(int amount) {
+    if (balance >= amount) {
+        balance -= amount;
+    }
+}
+```
+- Locks on the **entire object (`this`)**  
+- Only one thread can execute any `synchronized` method of the object at a time  
+
+### **Option 2: Synchronized Block (More Flexible)**
+```java
+public void withdraw(int amount) {
+    synchronized(this) {  // Explicit lock object
+        if (balance >= amount) {
+            balance -= amount;
+        }
+    }
+}
+```
+- Allows finer-grained control than synchronized methods  
+- Can lock on **any object**, not just `this`  
+
+---
+
+## **3. What is a Monitor Object?**
+A monitor is a **synchronization mechanism** that controls thread access to shared resources. In Java:
+- **Every object** has an **implicit monitor lock** (also called an **intrinsic lock**)  
+- When a thread enters a `synchronized` block/method, it **acquires the lock**  
+- Other threads **wait** until the lock is released  
+
+### **Monitor Lock Rules:**
+🔒 **One thread at a time** can hold the lock  
+🔓 The lock is **automatically released** when the thread exits the block/method  
+🚦 Other threads **block (wait)** if the lock is held by another thread  
+
+---
+
+## **4. How to Use Monitor Objects**
+### **Example: Bank Account with Monitor Lock**
+```java
+class BankAccount {
+    private int balance = 100;
+    private final Object lock = new Object();  // Explicit monitor object
+
+    // Thread-safe deposit
+    public void deposit(int amount) {
+        synchronized(lock) {  // Using custom monitor object
+            balance += amount;
+        }
+    }
+
+    // Thread-safe withdrawal
+    public void withdraw(int amount) {
+        synchronized(lock) {  // Same lock as deposit
+            if (balance >= amount) {
+                balance -= amount;
+            }
+        }
+    }
+}
+```
+**Key Points:**  
+✔ Both methods use the **same lock object (`lock`)**  
+✔ Ensures **atomic** balance updates  
+✔ Prevents **race conditions** between `deposit()` and `withdraw()`  
+
+---
+
+## **5. Best Practices**
+1. **Keep synchronized blocks small**  
+   - Minimize the time you hold the lock  
+   ```java
+   // BAD: Holds lock during IO operation
+   synchronized(this) {
+       data = fetchFromDatabase();  // SLOW!
+   }
+
+   // GOOD: Only protect shared data
+   Data temp = fetchFromDatabase();  // Unlocked
+   synchronized(this) {
+       this.data = temp;  // Quick update
+   }
+   ```
+
+2. **Avoid deadlocks**  
+   - Never call another synchronized method while holding a lock  
+   ```java
+   synchronized(lockA) {
+       synchronized(lockB) {  // RISKY: Can deadlock
+           // ...
+       }
+   }
+   ```
+
+3. **Prefer `final` monitor objects**  
+   ```java
+   private final Object lock = new Object();  // Good
+   ```
+
+4. **Consider higher-level alternatives**  
+   - `ReentrantLock` (more flexible locking)  
+   - `ConcurrentHashMap` (thread-safe collections)  
+
+---
+
+## **Common Mistakes**
+❌ **Synchronizing on different objects** (no protection)  
+```java
+// WRONG: Two different locks = no synchronization
+synchronized(lock1) { balance += amount; }
+synchronized(lock2) { balance -= amount; }
+```
+
+❌ **Using mutable monitor objects**  
+```java
+Object lock = new Object();
+synchronized(lock) {
+    lock = new Object();  // BAD: Changes lock reference
+}
+```
+
+❌ **Synchronizing on `String` or boxed primitives**  
+```java
+String lock = "LOCK";
+synchronized(lock) {  // BAD: String literals are interned
+    // ...
+}
+```
+
+---
+
+## **Key Takeaways**
+1. **`synchronized`** ensures **thread-safe access** to shared resources  
+2. **Monitor objects** (locks) control which thread can enter synchronized blocks  
+3. **Best practice:** Use a **private final** object as your monitor  
+4. **Alternatives:** Consider `java.util.concurrent` for more complex scenarios  
+
+This is how Java keeps your multi-threaded code safe and predictable! 🚀
+
